@@ -41,6 +41,16 @@
 #include "net.h"
 #include "sds.h"
 
+#ifdef _WIN32
+    #ifndef WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
+    #endif
+    #include <windows.h>
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+    #include <windows.h>
+#endif
+
 static redisReply *createReplyObject(int type);
 static void *createStringObject(const redisReadTask *task, char *str, size_t len);
 static void *createArrayObject(const redisReadTask *task, int elements);
@@ -992,6 +1002,18 @@ void __redisSetError(redisContext *c, int type, const char *str) {
 static redisContext *redisContextInit(void) {
     redisContext *c;
 
+#ifdef _WIN32
+    /* fireup Windows socket stuff */
+    WORD wVersionRequested = MAKEWORD(2, 0);
+    WSADATA wsaData;
+    int ret;
+    ret = WSAStartup(wVersionRequested, &wsaData);
+    if (ret != 0) {
+    fprintf(stderr, "error: WSAStartup() failed: %d\n", ret);
+    return NULL;
+    }
+#endif
+
     c = calloc(1,sizeof(redisContext));
     if (c == NULL)
         return NULL;
@@ -1007,7 +1029,11 @@ void redisFree(redisContext *c) {
     if (c == NULL)
         return;
     if (c->fd > 0)
+#ifdef _WIN32
+        closesocket(c->fd);
+#else
         close(c->fd);
+#endif
     if (c->obuf != NULL)
         sdsfree(c->obuf);
     if (c->reader != NULL)
@@ -1069,6 +1095,7 @@ redisContext *redisConnectBindNonBlock(const char *ip, int port,
     return c;
 }
 
+#ifndef WIN32
 redisContext *redisConnectUnix(const char *path) {
     redisContext *c;
 
@@ -1104,6 +1131,7 @@ redisContext *redisConnectUnixNonBlock(const char *path) {
     redisContextConnectUnix(c,path,NULL);
     return c;
 }
+#endif
 
 redisContext *redisConnectFd(int fd) {
     redisContext *c;

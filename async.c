@@ -173,7 +173,7 @@ redisAsyncContext *redisAsyncConnectBind(const char *ip, int port,
     return ac;
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 redisAsyncContext *redisAsyncConnectUnix(const char *path) {
     redisContext *c;
     redisAsyncContext *ac;

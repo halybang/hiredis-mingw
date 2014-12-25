@@ -48,6 +48,7 @@ int redisContextConnectBindTcp(redisContext *c, const char *addr, int port,
 #ifndef _WIN32
 int redisContextConnectUnix(redisContext *c, const char *path, const struct timeval *timeout);
 #endif
+
 int redisKeepAlive(redisContext *c, int interval);
 
 #endif

@@ -995,7 +995,7 @@ void __redisSetError(redisContext *c, int type, const char *str) {
     } else {
         /* Only REDIS_ERR_IO may lack a description! */
         assert(type == REDIS_ERR_IO);
-        strerror_r(errno,c->errstr,sizeof(c->errstr));
+        //strerror_r(errno,c->errstr,sizeof(c->errstr));
     }
 }
 
@@ -1172,7 +1172,11 @@ int redisBufferRead(redisContext *c) {
     if (c->err)
         return REDIS_ERR;
 
+#if WIN32
+    nread = recv(c->fd,buf,sizeof(buf), 0);
+#else
     nread = read(c->fd,buf,sizeof(buf));
+#endif
     if (nread == -1) {
         if ((errno == EAGAIN && !(c->flags & REDIS_BLOCK)) || (errno == EINTR)) {
             /* Try again later */
@@ -1209,7 +1213,11 @@ int redisBufferWrite(redisContext *c, int *done) {
         return REDIS_ERR;
 
     if (sdslen(c->obuf) > 0) {
+#if WIN32
+        nwritten = send(c->fd,c->obuf,sdslen(c->obuf), 0);
+#else
         nwritten = write(c->fd,c->obuf,sdslen(c->obuf));
+#endif
         if (nwritten == -1) {
             if ((errno == EAGAIN && !(c->flags & REDIS_BLOCK)) || (errno == EINTR)) {
                 /* Try again later */

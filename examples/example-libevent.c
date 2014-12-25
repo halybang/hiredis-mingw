@@ -3,6 +3,12 @@
 #include <string.h>
 #include <signal.h>
 
+#ifdef WIN32
+    #ifndef WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
+    #endif
+    #include <windows.h>
+#endif
 #include <hiredis.h>
 #include <async.h>
 #include <adapters/libevent.h>
@@ -33,13 +39,26 @@ void disconnectCallback(const redisAsyncContext *c, int status) {
 }
 
 int main (int argc, char **argv) {
-    signal(SIGPIPE, SIG_IGN);
+
+#ifdef _WIN32
+    /* fireup Windows socket stuff */
+    WORD wVersionRequested = MAKEWORD(2, 0);
+    WSADATA wsaData;
+    int ret;
+    ret = WSAStartup(wVersionRequested, &wsaData);
+    if (ret != 0) {
+    fprintf(stderr, "error: WSAStartup() failed: %d\n", ret);
+    return NULL;
+    }
+#endif
+
+    //signal(SIGPIPE, SIG_IGN);
     struct event_base *base = event_base_new();
 
     redisAsyncContext *c = redisAsyncConnect("127.0.0.1", 6379);
     if (c->err) {
         /* Let *c leak for now... */
-        printf("Error: %s\n", c->errstr);
+        printf("ErrorX: %s\n", c->errstr);
         return 1;
     }
 

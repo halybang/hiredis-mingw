@@ -1,3 +1,5 @@
+INCLUDEPATH += $$PWD \
+               $$PWD/../ \
 
 HEADERS                += $$PWD/async.h \
                           $$PWD/dict.h \

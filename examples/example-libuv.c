@@ -3,6 +3,12 @@
 #include <string.h>
 #include <signal.h>
 
+#ifdef WIN32
+    #ifndef WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
+    #endif
+    #include <windows.h>
+#endif
 #include <hiredis.h>
 #include <async.h>
 #include <adapters/libuv.h>
@@ -33,7 +39,7 @@ void disconnectCallback(const redisAsyncContext *c, int status) {
 }
 
 int main (int argc, char **argv) {
-    signal(SIGPIPE, SIG_IGN);
+    //signal(SIGPIPE, SIG_IGN);
     uv_loop_t* loop = uv_default_loop();
 
     redisAsyncContext *c = redisAsyncConnect("127.0.0.1", 6379);

@@ -87,7 +87,7 @@ static void redisLibuvCleanup(void *privdata) {
 }
 
 
-static int redisLibuvAttach(redisAsyncContext* ac, uv_loop_t* loop) {
+int redisLibuvAttach(redisAsyncContext* ac, uv_loop_t* loop) {
   redisContext *c = &(ac->c);
 
   if (ac->ev.data != NULL) {
